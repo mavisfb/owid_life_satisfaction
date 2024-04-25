@@ -24,9 +24,9 @@ pacman::p_load(plotly, tidyverse, reactable, here)
 
 ```{r}
 ## Import data
-cantril <- 
-  read_csv(here("C:/Users/mboateng21/OneDrive - Oulun yliopisto/Documents/GitHub/owid_life_satisfaction/data/happiness-cantril-ladder.csv")) %>% 
-  rename(Country = Entity)
+library(readr)
+happiness_cantril_ladder <- read_csv("data/happiness-cantril-ladder.csv")
+View(happiness_cantril_ladder)
 ```
 
 “Please imagine a ladder, with steps numbered from 0 at the bottom to 10 at the top. The top of the ladder represents the best possible life for you and the bottom of the ladder represents the worst possible life for you. On which step of the ladder would you say you personally feel you stand at this time?”
@@ -36,10 +36,10 @@ cantril <-
 ## 🔢 Table
 
 ```{r}
-cantril %>% 
+happiness_cantril_ladder%>% 
   filter(Year %in% c(2011, 2022)) %>% 
-  pivot_wider(names_from = Year, values_from = `Cantril ladder score`, id_cols = Country) %>% 
-  select(Country, `2011`, `2022`) %>% 
+  pivot_wider(names_from = Year, values_from = `Cantril ladder score`, id_cols = Entity) %>% 
+  select(Entity, `2011`, `2022`) %>% 
   mutate(`Absolute change` = round(`2022` - `2011`, 3)) %>% 
   mutate(`Relative change` = (`2022` - `2011`) / `2011`) %>% 
   reactable(
@@ -50,14 +50,14 @@ cantril %>%
 ## 🌎 Map
 
 ```{r}
-cantril %>% 
+happiness_cantril_ladder%>% 
   mutate(`Cantril ladder score` = round(`Cantril ladder score`, 2)) %>%
   plot_geo(width = 940) %>% 
   add_trace(
     z = ~`Cantril ladder score`,
     color = ~`Cantril ladder score`,
     locations = ~Code,
-    text = ~Country,
+    text = ~Entity,
     frame = ~Year, colors = "YlGn"
   ) %>% 
   colorbar(title = NULL)
@@ -70,9 +70,9 @@ cantril %>%
 # simple line chart of the data, for five countries on different continents (ggplot, piped into ggplotly)
 
 cantril_chart <- 
-  cantril %>% 
-  filter(Country %in% c("Norway", "Australia", "Germany", "Bolivia", "Colombia", "Bhutan")) %>%
-  ggplot(aes(x = Year, y = `Cantril ladder score`, color = Country)) +
+ happiness_cantril_ladder  %>% 
+  filter(Entity %in% c("Norway", "Australia", "Germany", "Bolivia", "Colombia", "Bhutan")) %>%
+  ggplot(aes(x = Year, y = `Cantril ladder score`, color = Entity)) +
   geom_line() +
   scale_y_continuous(limits = c(0, 10)) +
   labs(x = NULL,
@@ -94,13 +94,13 @@ pacman::p_load(crosstalk)
 
 
 # Crosstalk shared data
-shared_cantril <- highlight_key(cantril)
+shared_cantril <- highlight_key(happiness_cantril_ladder)
 
 cantril_plotly <- plot_ly(
   shared_cantril, 
   x = ~Year, 
   y = ~`Cantril ladder score`, 
-  color = ~Country, 
+  color = ~Entity, 
   type = "scatter", 
   mode = "lines+markers"
 ) %>%
@@ -111,7 +111,7 @@ country_filter <- filter_select(
   "country_filter", 
   "Select a country to examine", 
   shared_cantril, 
-  ~Country, 
+  ~Entity, 
   multiple = TRUE
 )
 
