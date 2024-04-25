@@ -25,7 +25,7 @@ pacman::p_load(plotly, tidyverse, reactable, here)
 ```{r}
 ## Import data
 cantril <- 
-  read_csv(here("data/happiness-cantril-ladder.csv")) %>% 
+  read_csv(here("C:/Users/mboateng21/OneDrive - Oulun yliopisto/Documents/GitHub/owid_life_satisfaction/data/happiness-cantril-ladder.csv")) %>% 
   rename(Country = Entity)
 ```
 
